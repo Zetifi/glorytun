@@ -212,6 +212,7 @@ gt_path(int argc, char **argv, void *data)
     struct argz_ull beat = {.suffix = argz_time_suffix};
     struct argz_ull pref = {.max = 0xFF >> 1};
     struct argz_ull loss = {.max = 100, .suffix = gt_argz_percent_suffix};
+    struct argz_ull maxrtt = {.suffix = argz_time_suffix};
 
     struct argz setz[] = {
         {"up",        "Enable path",                      .grp = 2},
