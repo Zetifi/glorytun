@@ -1,7 +1,7 @@
 name: Upload
 
 on:
-  push:
+  workflow_dispatch:
     tags:
     - "v*"
 
