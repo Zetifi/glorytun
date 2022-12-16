@@ -214,12 +214,13 @@ gt_path(int argc, char **argv, void *data)
     struct argz_ull loss = {.max = 100, .suffix = gt_argz_percent_suffix};
 
     struct argz setz[] = {
-        {"up",        "Enable path",                .grp = 2},
-        {"down",      "Disable path",               .grp = 2},
-        {"rate",      "Rate limit properties",  argz, &ratez},
-        {"beat",      "Internal beat rate", argz_ull,  &beat},
-        {"pref",      "Path preference",    argz_ull,  &pref},
-        {"losslimit", "Disable lossy path", argz_ull,  &loss},
+        {"up",        "Enable path",                      .grp = 2},
+        {"down",      "Disable path",                     .grp = 2},
+        {"rate",      "Rate limit properties",        argz, &ratez},
+        {"beat",      "Internal beat rate",       argz_ull,  &beat},
+        {"pref",      "Path preference",          argz_ull,  &pref},
+        {"losslimit", "Disable lossy path",       argz_ull,  &loss},
+        {"maxrtt", "Disable high latency path", argz_ull,  &maxrtt},
         {0}};
 
     struct argz showz[] = {
@@ -257,15 +258,16 @@ gt_path(int argc, char **argv, void *data)
         struct ctl_msg req = {
             .type = CTL_PATH_CONF,
             .path.conf = {
-                .local       = local.sock,
-                .remote      = remote.sock,
-                .state       = MUD_EMPTY,
-                .tx_max_rate = tx.value,
-                .rx_max_rate = rx.value,
-                .beat        = beat.value,
-                .pref        = argz_is_set(setz, "pref")
-                             ? (pref.value << 1) | 1 : 0,
-                .loss_limit  = loss.value * 255 / 100,
+                .local         = local.sock,
+                .remote        = remote.sock,
+                .state         = MUD_EMPTY,
+                .tx_max_rate   = tx.value,
+                .rx_max_rate   = rx.value,
+                .beat          = beat.value,
+                .max_rtt_limit = maxrtt.value,
+                .pref          = argz_is_set(setz, "pref")
+                               ? (pref.value << 1) | 1 : 0,
+                .loss_limit    = loss.value * 255 / 100,
             },
         }, res = {0};
 
