@@ -7,6 +7,7 @@
 
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <sys/select.h>
 
 #include "../argz/argz.h"
@@ -235,7 +236,7 @@ gt_bind(int argc, char **argv)
         struct timeval tv = { 0 };
         int update = mud_update(mud);
 
-        if (update >= 0) {
+        if (update != -1) {
             if (mud_can_read && tun_can_write) {
             } else if (tun_can_read && mud_can_write) {
                 if (update)
@@ -306,7 +307,9 @@ gt_bind(int argc, char **argv)
                                       req.path.rate_rx,
                                       req.path.beat,
                                       req.path.fixed_rate,
-                                      req.path.loss_limit))
+                                      req.path.preferred,
+                                      req.path.loss_limit,
+                                      be64toh(req.path.rtt_limit)))
                         res.ret = errno;
                     break;
                 case CTL_CONF:

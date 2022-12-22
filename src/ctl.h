@@ -27,7 +27,9 @@ struct ctl_msg {
             unsigned long rate_rx;
             unsigned long beat;
             unsigned char fixed_rate;
+            unsigned char preferred;
             unsigned char loss_limit;
+            uint64_t rtt_limit; // Stored MSB.
         } path;
         struct {
             char tun_name[64];
