@@ -3,6 +3,8 @@
 #include "str.h"
 
 #include <stdio.h>
+#include <stdint.h>
+#include <endian.h>
 #include <sys/socket.h>
 #include <unistd.h>
 

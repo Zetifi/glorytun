@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <endian.h>
 #include <sys/select.h>
 
 #include "../argz/argz.h"
