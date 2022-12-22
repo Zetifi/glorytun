@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#define _BSD_SOURCE
 #include <endian.h>
 #include <sys/socket.h>
 #include <unistd.h>

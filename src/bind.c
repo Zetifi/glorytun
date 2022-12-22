@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdint.h>
+#define _BSD_SOURCE
 #include <endian.h>
 #include <sys/select.h>
 
