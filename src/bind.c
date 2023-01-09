@@ -303,7 +303,8 @@ gt_bind(int argc, char **argv)
                 case CTL_NONE:
                     break;
                 case CTL_STATE:
-                    if (mud_set_state(mud, (struct sockaddr *)&req.path.addr,
+                    if (mud_set_state(mud,
+                                      req.path.interface_name,
                                       req.path.state,
                                       req.path.rate_tx,
                                       req.path.rate_rx,

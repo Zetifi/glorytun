@@ -21,7 +21,7 @@ struct ctl_msg {
     int reply, ret;
     union {
         struct {
-            struct sockaddr_storage addr;
+            char interface_name[16];
             enum mud_state state;
             unsigned long rate_tx;
             unsigned long rate_rx;

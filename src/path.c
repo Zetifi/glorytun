@@ -8,109 +8,83 @@
 #include <endian.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <net/if.h>
 
 #include "../argz/argz.h"
 
-static void
-
-gt_path_print_status(struct mud_path *path, int term)
+static void gt_path_print_status(struct mud_path *path, int term)
 {
-    char bindstr[INET6_ADDRSTRLEN];
-    char publstr[INET6_ADDRSTRLEN];
-    char peerstr[INET6_ADDRSTRLEN];
-
-    gt_toaddr(bindstr, sizeof(bindstr),
-            (struct sockaddr *)&path->local_addr);
-    gt_toaddr(publstr, sizeof(publstr),
-            (struct sockaddr *)&path->r_addr);
-    gt_toaddr(peerstr, sizeof(peerstr),
-            (struct sockaddr *)&path->addr);
+    char remote_address[INET6_ADDRSTRLEN];
+    gt_toaddr(remote_address, sizeof(remote_address), (struct sockaddr *)&path->remote_address);
 
     const char *statestr = NULL;
 
-    switch (path->state) {
-        case MUD_UP:     statestr = "UP";     break;
-        case MUD_BACKUP: statestr = "BACKUP"; break;
-        case MUD_DOWN:   statestr = "DOWN";   break;
-        default:         return;
+    switch (path->state)
+    {
+    case MUD_UP:
+        statestr = "UP";
+        break;
+    case MUD_BACKUP:
+        statestr = "BACKUP";
+        break;
+    case MUD_DOWN:
+        statestr = "DOWN";
+        break;
+    default:
+        return;
     }
 
     printf(term ? "path %s\n"
-            "  status:  %s\n"
-            "  bind:    %s port %"PRIu16"\n"
-            "  public:  %s port %"PRIu16"\n"
-            "  peer:    %s port %"PRIu16"\n"
-            "  mtu:     %zu bytes\n"
-            "  rtt:     %.3f ms\n"
-            "  rttvar:  %.3f ms\n"
-            "  rate:    %s\n"
-            "  preferred: %s\n"
-            "  losslim: %u\n"
-            "  rttlim: %"PRIu64" ms\n"
-            "  beat:    %"PRIu64" ms\n"
-            "  tx:\n"
-            "    rate:  %"PRIu64" bytes/sec\n"
-            "    loss:  %"PRIu64" percent\n"
-            "    total: %"PRIu64" packets\n"
-            "  rx:\n"
-            "    rate:  %"PRIu64" bytes/sec\n"
-            "    loss:  %"PRIu64" percent\n"
-            "    total: %"PRIu64" packets\n"
-            : "path %s %s"
-            " %s %"PRIu16" %s %"PRIu16" %s %"PRIu16
-            " %zu %.3f %.3f"
-            " %s %s %u %"PRIu64""
-            " %"PRIu64
-            " %"PRIu64" %"PRIu64" %"PRIu64
-            " %"PRIu64" %"PRIu64" %"PRIu64
-            "\n",
-        statestr,
-        path->ok ? "OK" : "DEGRADED",
-        bindstr[0] ? bindstr : "-",
-        gt_get_port((struct sockaddr *)&path->local_addr),
-        publstr[0] ? publstr : "-",
-        gt_get_port((struct sockaddr *)&path->r_addr),
-        peerstr[0] ? peerstr : "-",
-        gt_get_port((struct sockaddr *)&path->addr),
-        path->mtu.ok,
-        (double)path->rtt.val / 1e3,
-        (double)path->rtt.var / 1e3,
-        path->conf.fixed_rate ? "fixed" : "auto",
-        path->conf.preferred ? "PREFERRED" : "NOT PREFERRED",
-        path->conf.loss_limit * 100 / 255,
-        path->conf.rtt_limit / 1000,
-        path->conf.beat / 1000,
-        path->tx.rate,
-        path->tx.loss * 100 / 255,
-        path->tx.total,
-        path->rx.rate,
-        path->rx.loss * 100 / 255,
-        path->rx.total);
+                  "  status:  %s\n"
+                  "  interface_name:    %s\n"
+                  "  remote_address:    %s port %" PRIu16 "\n"
+                  "  mtu:     %zu bytes\n"
+                  "  rtt:     %.3f ms\n"
+                  "  rttvar:  %.3f ms\n"
+                  "  rate:    %s\n"
+                  "  preferred: %s\n"
+                  "  losslim: %u%%\n"
+                  "  rttlim: %" PRIu64 " ms\n"
+                  "  beat:    %" PRIu64 " ms\n"
+                  "  tx:\n"
+                  "    rate:  %" PRIu64 " bytes/sec\n"
+                  "    loss:  %" PRIu64 " percent\n"
+                  "    total: %" PRIu64 " packets\n"
+                  "  rx:\n"
+                  "    rate:  %" PRIu64 " bytes/sec\n"
+                  "    loss:  %" PRIu64 " percent\n"
+                  "    total: %" PRIu64 " packets\n"
+                : "path %s %s"
+                  " %s -> %s %" PRIu16
+                  " %zu %.3f %.3f"
+                  " %s %s %u %" PRIu64 ""
+                  " %" PRIu64
+                  " %" PRIu64 " %" PRIu64 " %" PRIu64
+                  " %" PRIu64 " %" PRIu64 " %" PRIu64
+                  "\n",
+           statestr,
+           path->ok ? "OK" : "DEGRADED",
+           path->interface_name,
+           remote_address[0] ? remote_address : "-",
+           gt_get_port((struct sockaddr *)&path->remote_address),
+           path->mtu.ok,
+           (double)path->rtt.val / 1e3,
+           (double)path->rtt.var / 1e3,
+           path->conf.fixed_rate ? "fixed" : "auto",
+           path->conf.preferred ? "PREFERRED" : "NOT PREFERRED",
+           path->conf.loss_limit * 100 / 255,
+           path->conf.rtt_limit / 1000,
+           path->conf.beat / 1000,
+           path->tx.rate,
+           path->tx.loss * 100 / 255,
+           path->tx.total,
+           path->rx.rate,
+           path->rx.loss * 100 / 255,
+           path->rx.total);
 }
 
 static int
-gt_path_cmp_addr(struct sockaddr_storage *a, struct sockaddr_storage *b)
-{
-    if (a->ss_family != b->ss_family)
-        return 1;
-
-    if (a->ss_family == AF_INET) {
-        struct sockaddr_in *A = (struct sockaddr_in *)a;
-        struct sockaddr_in *B = (struct sockaddr_in *)b;
-        return ((memcmp(&A->sin_addr, &B->sin_addr, sizeof(A->sin_addr))));
-    }
-
-    if (a->ss_family == AF_INET6) {
-        struct sockaddr_in6 *A = (struct sockaddr_in6 *)a;
-        struct sockaddr_in6 *B = (struct sockaddr_in6 *)b;
-        return ((memcmp(&A->sin6_addr, &B->sin6_addr, sizeof(A->sin6_addr))));
-    }
-
-    return 1;
-}
-
-static int
-gt_path_status(int fd, enum mud_state state, struct sockaddr_storage *addr)
+gt_path_status(int fd, enum mud_state state, const char *interface_name)
 {
     struct ctl_msg req = {
         .type = CTL_PATH_STATUS,
@@ -142,10 +116,13 @@ gt_path_status(int fd, enum mud_state state, struct sockaddr_storage *addr)
 
     int term = isatty(1);
 
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++)
+    {
         if ((state == MUD_EMPTY || path[i].state == state) &&
-            (!addr->ss_family || !gt_path_cmp_addr(addr, &path[i].local_addr)))
+            (strlen(req.path.interface_name) == 0 || strcmp(req.path.interface_name, &path[i].interface_name[0]) == 0))
+        {
             gt_path_print_status(&path[i], term);
+        }
     }
 
     return 0;
@@ -155,6 +132,7 @@ int
 gt_path(int argc, char **argv)
 {
     const char *dev = NULL;
+    const char *ifname = NULL;
     unsigned int loss_limit = 0;
     unsigned int rtt_limit = 0;
 
@@ -172,8 +150,8 @@ gt_path(int argc, char **argv)
         {NULL}};
 
     struct argz pathz[] = {
-        {NULL, "IPADDR", &req.path.addr, argz_addr},
-        {"dev", "NAME", &dev, argz_str},
+        {NULL, "IFNAME", &ifname, argz_str},
+        {"dev", "NAME", &dev, argz_str}, 
         {"up|backup|down", NULL, NULL, argz_option},
         {"rate", NULL, &ratez, argz_option},
         {"beat", "SECONDS", &req.path.beat, argz_time},
@@ -209,9 +187,20 @@ gt_path(int argc, char **argv)
            || argz_is_set(pathz, "losslimit")
            || argz_is_set(pathz, "rttlimit");
 
-    if (set && !req.path.addr.ss_family) {
-        gt_log("please specify a path\n");
+    if (set && !ifname) {
+        gt_log("please specify an interface\n");
         return 1;
+    }
+
+    if (ifname)
+    {
+        if (strlen(ifname) > IFNAMSIZ)
+        {
+            gt_log("Interface name longer than maximum length.\n");
+            return 1;
+        }
+
+        strncpy(&req.path.interface_name[0], ifname, 15);
     }
 
     if (argz_is_set(pathz, "up")) {
@@ -228,7 +217,9 @@ gt_path(int argc, char **argv)
     }
 
     if (loss_limit)
+    {
         req.path.loss_limit = loss_limit * 255 / 100;
+    }
 
     if (rtt_limit)
     {
@@ -243,9 +234,8 @@ gt_path(int argc, char **argv)
 
     int ret;
 
-    if (!req.path.addr.ss_family ||
-        (req.path.state == MUD_EMPTY && !set)) {
-        ret = gt_path_status(fd, req.path.state, &req.path.addr);
+    if (!ifname || (req.path.state == MUD_EMPTY && !set)) {
+        ret = gt_path_status(fd, req.path.state, &req.path.interface_name[0]);
     } else {
         ret = ctl_reply(fd, &res, &req);
     }
