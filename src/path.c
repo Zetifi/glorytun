@@ -72,14 +72,14 @@ static void gt_path_print_status(struct mud_path *path, int term)
            (double)path->rtt.var / 1e3,
            path->conf.fixed_rate ? "fixed" : "auto",
            path->conf.preferred ? "PREFERRED" : "NOT PREFERRED",
-           path->conf.loss_limit * 100 / 255,
+           path->conf.loss_limit,
            path->conf.rtt_limit / 1000,
            path->conf.beat / 1000,
            path->tx.rate,
-           path->tx.loss * 100 / 255,
+           path->tx.loss,
            path->tx.total,
            path->rx.rate,
-           path->rx.loss * 100 / 255,
+           path->rx.loss,
            path->rx.total);
 }
 
